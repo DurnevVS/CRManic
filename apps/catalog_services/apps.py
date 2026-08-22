@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class CatalogServicesConfig(AppConfig):
-    name = 'catalog_services'
+    name = "apps.catalog_services"
