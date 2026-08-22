@@ -1,4 +1,9 @@
 AGENTS.md
+
+# DB
+database/*
+!database/.gitkeep
+
 # Python-generated files
 __pycache__/
 *.py[oc]
