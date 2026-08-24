@@ -2,12 +2,12 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.accounts.models import ContactInfo
+from apps.accounts.models import ContactInfo, Master
 
 
 class Client(ContactInfo):
     master = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Master,
         on_delete=models.CASCADE,
         related_name="clients",
         verbose_name=_("Мастер"),

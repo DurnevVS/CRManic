@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.models import Master
 from apps.clients.models import Client
+from apps.core.models.fields import price_field
 
 from .service import Service
 
@@ -32,7 +33,7 @@ class CompletedService(models.Model):
     )
 
     service_name = models.CharField(_("Название услуги"), max_length=255)
-    price = models.DecimalField(_("Стоимость"), max_digits=10, decimal_places=2)
+    price = price_field(_("Стоимость"))
     created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True)
 
     class Meta:

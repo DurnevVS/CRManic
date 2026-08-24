@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.models.fields import expense_field, price_field
+
 
 class Service(models.Model):
     master = models.ForeignKey(
@@ -12,14 +14,10 @@ class Service(models.Model):
     )
 
     name = models.CharField(_("Название"), max_length=255)
-    price = models.DecimalField(_("Стоимость"), max_digits=7, decimal_places=2)
+    price = price_field(_("Стоимость"))
 
-    estimated_material_cost = models.DecimalField(
-        _("Примерная стоимость расходников"),
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
+    estimated_material_cost = expense_field(
+        _("Примерная стоимость расходников"), nullable=True
     )
 
     description = models.TextField(_("Описание"), blank=True)
