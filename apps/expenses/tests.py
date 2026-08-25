@@ -9,7 +9,7 @@ from django.test import TestCase
 from apps.accounts.models import Master
 from apps.schedule.models import ScheduleDay
 
-from .models import Expense, ExpenseGroup
+from .models import Expense, ExpenseGroup, ExpenseTemplate
 
 
 def create_master(phone: str) -> Master:
@@ -139,3 +139,92 @@ class ExpenseTests(TestCase):
         self.schedule_day.delete()
 
         self.assertFalse(Expense.objects.exists())
+
+
+class ExpenseTemplateTests(TestCase):
+    def setUp(self):
+        self.master = create_master(phone="+79991234567")
+
+    def test_master_can_use_global_group(self):
+        group = ExpenseGroup.objects.get(name="Расходники", master__isnull=True)
+        template = ExpenseTemplate(
+            master=self.master,
+            group=group,
+            amount=Decimal("500.00"),
+            comment="Перчатки",
+        )
+
+        template.full_clean()
+        template.save()
+
+        self.assertEqual(template.group, group)
+
+    def test_master_can_use_personal_group(self):
+        group = ExpenseGroup.objects.create(master=self.master, name="Обучение")
+        template = ExpenseTemplate(
+            master=self.master,
+            group=group,
+            amount=Decimal("500.00"),
+        )
+
+        template.full_clean()
+        template.save()
+
+        self.assertEqual(template.group, group)
+
+    def test_personal_group_must_belong_to_template_master(self):
+        another_master = create_master(phone="+79991234568")
+        group = ExpenseGroup.objects.create(
+            master=another_master,
+            name="Обучение",
+        )
+        template = ExpenseTemplate(
+            master=self.master,
+            group=group,
+            amount=Decimal("500.00"),
+        )
+
+        with self.assertRaises(ValidationError):
+            template.full_clean()
+
+    def test_amount_must_be_greater_than_zero(self):
+        group = ExpenseGroup.objects.get(name="Расходники", master__isnull=True)
+
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            ExpenseTemplate.objects.create(
+                master=self.master,
+                group=group,
+                amount=Decimal("0.00"),
+            )
+
+    def test_used_group_cannot_be_deleted(self):
+        group = ExpenseGroup.objects.get(name="Расходники", master__isnull=True)
+        ExpenseTemplate.objects.create(
+            master=self.master,
+            group=group,
+            amount=Decimal("500.00"),
+        )
+
+        with self.assertRaises(ProtectedError):
+            group.delete()
+
+    def test_string_contains_group_comment_and_amount(self):
+        group = ExpenseGroup.objects.get(name="Расходники", master__isnull=True)
+        template = ExpenseTemplate(
+            master=self.master,
+            group=group,
+            amount=Decimal("500.00"),
+            comment="Перчатки",
+        )
+
+        self.assertEqual(str(template), "Расходники — Перчатки — 500.00")
+
+    def test_string_omits_empty_comment(self):
+        group = ExpenseGroup.objects.get(name="Расходники", master__isnull=True)
+        template = ExpenseTemplate(
+            master=self.master,
+            group=group,
+            amount=Decimal("500.00"),
+        )
+
+        self.assertEqual(str(template), "Расходники — 500.00")

@@ -1,12 +1,11 @@
 from django.contrib import admin
 
-from .models import Expense, ExpenseGroup
+from .models import Expense, ExpenseGroup, ExpenseTemplate
 
 
 @admin.register(ExpenseGroup)
 class ExpenseGroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "master", "is_active")
-    list_filter = ("is_active",)
+    list_display = ("name", "master")
     search_fields = ("name", "master__phone")
 
 
@@ -19,3 +18,10 @@ class ExpenseAdmin(admin.ModelAdmin):
         "schedule_day__master__phone",
         "comment",
     )
+
+
+@admin.register(ExpenseTemplate)
+class ExpenseTemplateAdmin(admin.ModelAdmin):
+    list_display = ("group", "comment", "amount", "master")
+    list_filter = ("group",)
+    search_fields = ("group__name", "master__phone", "comment")
