@@ -29,7 +29,7 @@
    bad-override = false
    bad-assignment = false
 ```
-* Не используй `isinstance()` для `type narrowing`. Я предпочитаю `var: type = value`.
+* Не используй `isinstance()` для `type narrowing`. Убедись, что `type narrowing` вообще нужен. Я предпочитаю `var: type = value`.
 
 Перед завершением задачи, которая изменяла Python-файлы надо выполнить:
 1. Запусти `pyrefly check` из корня проекта.
