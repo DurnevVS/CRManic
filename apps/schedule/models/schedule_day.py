@@ -1,11 +1,12 @@
-from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+from apps.accounts.models import Master
 
 
 class ScheduleDay(models.Model):
     master = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Master,
         on_delete=models.CASCADE,
         related_name="schedule_days",
         verbose_name=_("Мастер"),
