@@ -17,9 +17,11 @@ class ScheduleDay(models.Model):
         ordering = ("date",)
         verbose_name = _("Рабочий день")
         verbose_name_plural = _("Рабочие дни")
-        constraints = models.UniqueConstraint(
-            fields=("master", "date"),
-            name="unique_schedule_day_per_master",
+        constraints = (
+            models.UniqueConstraint(
+                fields=("master", "date"),
+                name="unique_schedule_day_per_master",
+            ),
         )
 
     def __str__(self):

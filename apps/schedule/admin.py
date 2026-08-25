@@ -12,6 +12,10 @@ class ScheduleDayAdmin(admin.ModelAdmin):
 
 @admin.register(AppointmentSlot)
 class AppointmentSlotAdmin(admin.ModelAdmin):
-    list_display = ("schedule_day", "start_time", "end_time")
-    list_filter = ("schedule_day__date",)
-    search_fields = ("schedule_day__master__phone",)
+    list_display = ("schedule_day", "start_time", "end_time", "status", "client")
+    list_filter = ("status", "schedule_day__date")
+    search_fields = (
+        "schedule_day__master__phone",
+        "client__name",
+        "client__phone",
+    )
