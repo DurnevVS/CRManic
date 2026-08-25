@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.clients",
     "apps.catalog_services",
+    "apps.schedule",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
