@@ -112,3 +112,41 @@ class AppointmentSlotTests(TestCase):
 
         with self.assertRaises(IntegrityError), transaction.atomic():
             AppointmentSlot.objects.create(**slot_data)
+
+    def test_slots_cannot_overlap(self):
+        AppointmentSlot.objects.create(
+            schedule_day=self.schedule_day,
+            start_time=time(10),
+            end_time=time(11),
+        )
+        overlapping_slot = AppointmentSlot(
+            schedule_day=self.schedule_day,
+            start_time=time(10, 30),
+            end_time=time(11, 30),
+        )
+
+        with self.assertRaises(ValidationError):
+            overlapping_slot.full_clean()
+
+    def test_adjacent_slots_do_not_overlap(self):
+        AppointmentSlot.objects.create(
+            schedule_day=self.schedule_day,
+            start_time=time(10),
+            end_time=time(11),
+        )
+        adjacent_slot = AppointmentSlot(
+            schedule_day=self.schedule_day,
+            start_time=time(11),
+            end_time=time(12),
+        )
+
+        adjacent_slot.full_clean()
+
+    def test_slot_does_not_overlap_itself_when_updated(self):
+        slot = AppointmentSlot.objects.create(
+            schedule_day=self.schedule_day,
+            start_time=time(10),
+            end_time=time(11),
+        )
+
+        slot.full_clean()

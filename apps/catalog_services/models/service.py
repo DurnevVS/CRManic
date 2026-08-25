@@ -31,12 +31,23 @@ class Service(models.Model):
         verbose_name = _("Услуга")
         verbose_name_plural = _("Услуги")
 
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=("master", "name"),
                 name="unique_service_name_per_master",
-            )
-        ]
+            ),
+            models.CheckConstraint(
+                condition=models.Q(price__gte=0),
+                name="service_price_non_negative",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(estimated_material_cost__isnull=True)
+                    | models.Q(estimated_material_cost__gte=0)
+                ),
+                name="service_material_cost_non_negative",
+            ),
+        )
 
     def __str__(self):
         return self.name

@@ -73,27 +73,45 @@ class AppointmentSlot(models.Model):
     def clean(self):
         super().clean()
 
+        errors = {}
         if self.status == AppointmentSlotStatus.AVAILABLE:
             if self.client_id is not None:
-                raise ValidationError({
-                    "client": _("У свободного окошка не должно быть клиента.")
-                })
-            return
+                errors["client"] = _("У свободного окошка не должно быть клиента.")
+        elif self.client_id is None:
+            errors["client"] = _(
+                "Для несвободного окошка необходимо выбрать клиента."
+            )
+        elif self.schedule_day_id is not None:
+            client: Client = self.client
+            schedule_day: ScheduleDay = self.schedule_day
+            if client.master.pk != schedule_day.master.pk:
+                errors["client"] = _(
+                    "Клиент и рабочий день должны принадлежать одному мастеру."
+                )
 
-        if self.client_id is None:
-            raise ValidationError({
-                "client": _("Для несвободного окошка необходимо выбрать клиента.")
-            })
+        if (
+            self.schedule_day_id is not None
+            and self.start_time is not None
+            and self.end_time is not None
+        ):
+            overlapping_slots = AppointmentSlot.objects.filter(
+                schedule_day_id=self.schedule_day_id,
+                start_time__lt=self.end_time,
+                end_time__gt=self.start_time,
+            )
+            if self.pk is not None:
+                overlapping_slots = overlapping_slots.exclude(pk=self.pk)
 
-        if self.schedule_day_id is None:
-            return
+            if overlapping_slots.exists():
+                errors["start_time"] = _(
+                    "Окошко пересекается с другим окошком рабочего дня."
+                )
+                errors["end_time"] = _(
+                    "Окошко пересекается с другим окошком рабочего дня."
+                )
 
-        client: Client = self.client
-        schedule_day: ScheduleDay = self.schedule_day
-        if client.master.pk != schedule_day.master.pk:
-            raise ValidationError({
-                "client": _("Клиент и рабочий день должны принадлежать одному мастеру.")
-            })
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
         return f"{self.schedule_day}: {self.start_time:%H:%M}–{self.end_time:%H:%M}"

@@ -15,7 +15,7 @@ class Master(AbstractUser, ContactInfo):
     email = None
 
     USERNAME_FIELD = "phone"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ()
 
     objects = MasterManager()
 
