@@ -4,11 +4,15 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = [
-    "django>=6.1",
-]
+dependencies = ["django>=6.1"]
 
 [dependency-groups]
-dev = [
-    "django-stubs>=6.1.0",
-]
+dev = ["django-stubs>=6.1.0"]
+
+[tool.pyrefly]
+preset = "default"
+project-excludes = ['**/.venv', '**/tests', '**/migrations']
+
+[tool.pyrefly.errors]
+bad-override = false
+bad-assignment = false
