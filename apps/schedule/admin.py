@@ -1,6 +1,37 @@
 from django.contrib import admin
 
-from .models import AppointmentSlot, ScheduleDay
+from .models import (
+    AppointmentSlot,
+    ScheduleDay,
+    ScheduleDayTemplate,
+    ScheduleDayTemplateSlot,
+)
+
+
+class ScheduleDayTemplateSlotInline(admin.TabularInline):
+    model = ScheduleDayTemplateSlot
+    extra = 0
+
+
+@admin.register(ScheduleDayTemplate)
+class ScheduleDayTemplateAdmin(admin.ModelAdmin):
+    list_display = ("name", "master", "created_at")
+    search_fields = ("name", "master__phone")
+    inlines = (ScheduleDayTemplateSlotInline,)
+
+
+@admin.register(ScheduleDayTemplateSlot)
+class ScheduleDayTemplateSlotAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "start_time",
+        "end_time",
+        "template",
+        "is_reusable",
+        "master",
+    )
+    list_filter = ("is_reusable",)
+    search_fields = ("name", "master__phone", "template__name")
 
 
 @admin.register(ScheduleDay)

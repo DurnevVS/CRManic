@@ -5,7 +5,12 @@ from apps.accounts.views import LogoutView, MeView, TokenView
 from apps.catalog_services.views import CompletedServiceViewSet, ServiceViewSet
 from apps.clients.views import ClientViewSet
 from apps.expenses.views import ExpenseGroupViewSet, ExpenseTemplateViewSet, ExpenseViewSet
-from apps.schedule.views import AppointmentSlotViewSet, ScheduleDayViewSet
+from apps.schedule.views import (
+    AppointmentSlotViewSet,
+    ScheduleDayTemplateSlotViewSet,
+    ScheduleDayTemplateViewSet,
+    ScheduleDayViewSet,
+)
 
 router = DefaultRouter()
 router.register("clients", ClientViewSet, basename="client")
@@ -16,6 +21,16 @@ router.register(
     basename="completed-service",
 )
 router.register("schedule-days", ScheduleDayViewSet, basename="schedule-day")
+router.register(
+    "schedule-day-templates",
+    ScheduleDayTemplateViewSet,
+    basename="schedule-day-template",
+)
+router.register(
+    "schedule-day-template-slots",
+    ScheduleDayTemplateSlotViewSet,
+    basename="schedule-day-template-slot",
+)
 router.register(
     "appointment-slots",
     AppointmentSlotViewSet,

@@ -5,7 +5,49 @@ from apps.accounts.models import Master
 from apps.clients.models import Client
 from apps.core.api.serializers import ValidatedModelSerializer
 
-from .models import AppointmentSlot, AppointmentSlotStatus, ScheduleDay
+from .models import (
+    AppointmentSlot,
+    AppointmentSlotStatus,
+    ScheduleDay,
+    ScheduleDayTemplate,
+    ScheduleDayTemplateSlot,
+)
+
+
+class ScheduleDayTemplateSlotSerializer(ValidatedModelSerializer):
+    class Meta:
+        model = ScheduleDayTemplateSlot
+        fields = (
+            "id",
+            "template",
+            "name",
+            "start_time",
+            "end_time",
+            "is_reusable",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at")
+
+    def validate_template(self, template: ScheduleDayTemplate | None):
+        if template is None:
+            return template
+
+        master: Master = self.context["request"].user
+        if template.master_id != master.pk:
+            raise serializers.ValidationError(
+                _("Шаблон рабочего дня принадлежит другому мастеру.")
+            )
+        return template
+
+
+class ScheduleDayTemplateSerializer(ValidatedModelSerializer):
+    slots = ScheduleDayTemplateSlotSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ScheduleDayTemplate
+        fields = ("id", "name", "slots", "created_at", "updated_at")
+        read_only_fields = ("id", "slots", "created_at", "updated_at")
 
 
 class ScheduleDaySerializer(ValidatedModelSerializer):

@@ -7,7 +7,13 @@ from django.test import TestCase
 from apps.accounts.models import Master
 from apps.clients.models import Client
 
-from .models import AppointmentSlot, AppointmentSlotStatus, ScheduleDay
+from .models import (
+    AppointmentSlot,
+    AppointmentSlotStatus,
+    ScheduleDay,
+    ScheduleDayTemplate,
+    ScheduleDayTemplateSlot,
+)
 
 
 def create_master(phone: str) -> Master:
@@ -31,6 +37,69 @@ class ScheduleDayTests(TestCase):
 
         with self.assertRaises(IntegrityError), transaction.atomic():
             ScheduleDay.objects.create(master=self.master, date=schedule_date)
+
+
+class ScheduleDayTemplateSlotTests(TestCase):
+    def setUp(self):
+        self.master = create_master(phone="+79991234567")
+        self.template = ScheduleDayTemplate.objects.create(
+            master=self.master,
+            name="Обычный день",
+        )
+
+    def test_standalone_slot_must_be_reusable(self):
+        slot = ScheduleDayTemplateSlot(
+            master=self.master,
+            name="Окошко с 9 утра",
+            start_time=time(9),
+            end_time=time(10),
+        )
+
+        with self.assertRaises(ValidationError):
+            slot.full_clean()
+
+    def test_reusable_slot_can_exist_without_day_template(self):
+        slot = ScheduleDayTemplateSlot(
+            master=self.master,
+            name="Окошко с 9 утра",
+            start_time=time(9),
+            end_time=time(10),
+            is_reusable=True,
+        )
+
+        slot.full_clean()
+
+    def test_slot_and_day_template_must_belong_to_same_master(self):
+        another_master = create_master(phone="+79991234568")
+        slot = ScheduleDayTemplateSlot(
+            master=another_master,
+            template=self.template,
+            name="Окошко",
+            start_time=time(9),
+            end_time=time(10),
+        )
+
+        with self.assertRaises(ValidationError):
+            slot.full_clean()
+
+    def test_slots_in_day_template_cannot_overlap(self):
+        ScheduleDayTemplateSlot.objects.create(
+            master=self.master,
+            template=self.template,
+            name="Первое окошко",
+            start_time=time(9),
+            end_time=time(10),
+        )
+        slot = ScheduleDayTemplateSlot(
+            master=self.master,
+            template=self.template,
+            name="Второе окошко",
+            start_time=time(9, 30),
+            end_time=time(10, 30),
+        )
+
+        with self.assertRaises(ValidationError):
+            slot.full_clean()
 
 
 class AppointmentSlotTests(TestCase):
